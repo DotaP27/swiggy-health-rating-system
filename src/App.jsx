@@ -1,16 +1,12 @@
 import React from 'react'
 import products from './mock/products.json'
 import GradeChip from './components/GradeChip'
-import PerplexityCard from './components/PerplexityCard'
 import { scoreProduct } from '../src/scoring.js'
 
 export default function App() {
   return (
     <div className="app">
       <header><h1>Instamart Health Rater — Demo</h1></header>
-      <section style={{marginBottom:12}}>
-        <PerplexityCard url="https://www.perplexity.ai/computer/a/b84642c5-54b2-5d09-81a1-e9f04320d584" />
-      </section>
       <main>
         <ul className="product-list">
           {products.map(p => {
