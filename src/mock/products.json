@@ -1,0 +1,21 @@
+[{
+  "id": "p1",
+  "name": "Breakfast Multigrain Cereal",
+  "brand": "GoodGrains",
+  "ingredients": "whole grain oats, sugar, fortified with vitamins",
+  "nutrients": { "protein": 8, "fiber": 7, "sugar": 5, "saturatedFat": 1, "sodium": 150, "calories": 220 }
+},
+{
+  "id": "p2",
+  "name": "Potato Crisps",
+  "brand": "Crunchy",
+  "ingredients": "potato, palm oil, salt, sugar, fried",
+  "nutrients": { "protein": 4, "fiber": 1, "sugar": 12, "saturatedFat": 5, "sodium": 700, "calories": 500 }
+},
+{
+  "id": "p3",
+  "name": "Greek Yogurt",
+  "brand": "FreshDairy",
+  "ingredients": "milk, cultures",
+  "nutrients": { "protein": 10, "fiber": 0, "sugar": 6, "saturatedFat": 2, "sodium": 60, "calories": 120 }
+}]

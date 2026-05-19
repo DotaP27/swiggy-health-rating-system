@@ -1,0 +1,21 @@
+{
+  "name": "instamart-health-rater",
+  "version": "0.1.0",
+  "description": "Client-side nutrition scoring module for Instamart product cards",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview --port 4173",
+    "test": "node test/scoring.test.js"
+  },
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "react": "18.2.0",
+    "react-dom": "18.2.0"
+  },
+  "devDependencies": {
+    "vite": "5.0.0"
+  }
+}
