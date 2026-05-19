@@ -69,46 +69,89 @@ function mapGrade(score) {
  * @param {string} ingredients ingredient text
  * @param {object} opts optional targets and weights
  */
-export function scoreProduct(nutrients = {}, ingredients = '', opts = {}) {
-  const targets = Object.assign({}, DEFAULT_TARGETS, opts.targets || {});
-  const weights = Object.assign({}, WEIGHTS, opts.weights || {});
+// New: implement calculateHealthScore using the example logic provided by the user.
+export function calculateHealthScore(data) {
+  // data expected: { productName, category, calories, protein, fiber, sugar, satFat, sodium, ingredients }
+  function clampLocal(v, a, b) { return Math.max(a, Math.min(b, v)); }
 
-  const proteinScore = normalizeGood(nutrients.protein, targets.protein);
-  const fiberScore = normalizeGood(nutrients.fiber, targets.fiber);
-  const sugarScore = normalizeBad(nutrients.sugar, targets.sugar);
-  const satFatScore = normalizeBad(nutrients.saturatedFat, targets.saturatedFat);
-  const sodiumScore = normalizeBad(nutrients.sodium, targets.sodium);
-  const caloriesScore = normalizeBad(nutrients.calories, targets.calories);
+  function getIngredientAdjustment(text) {
+    const t = (text || '').toLowerCase();
+    let score = 0;
+    const reasons = [];
+    const positives = [
+      { keywords: ['whole grain', 'whole wheat', 'oats', 'millet'], value: 4, reason: 'Contains whole-grain ingredients.' },
+      { keywords: ['live cultures', 'probiotic'], value: 4, reason: 'Has probiotic or culture-based benefit.' },
+      { keywords: ['nuts', 'seeds'], value: 3, reason: 'Includes nuts or seeds.' },
+      { keywords: ['no artificial sweeteners', 'no artificial colors'], value: 2, reason: 'Cleaner ingredient profile.' },
+      { keywords: ['fruit pulp', 'fruit'], value: 2, reason: 'Contains fruit-based ingredients.' },
+      { keywords: ['no fried oil', 'baked'], value: 3, reason: 'Avoids or reduces fried processing.' }
+    ];
+    const negatives = [
+      { keywords: ['palm oil'], value: -4, reason: 'Uses palm oil.' },
+      { keywords: ['artificial sweetener', 'sucralose', 'acesulfame'], value: -3, reason: 'Contains artificial sweetener.' },
+      { keywords: ['preservative', 'added flavour', 'added flavor', 'flavor enhancer'], value: -3, reason: 'Has highly processed additives.' },
+      { keywords: ['fried', 'frying'], value: -4, reason: 'Processed as a fried product.' },
+      { keywords: ['refined flour', 'maida'], value: -4, reason: 'Uses refined flour.' },
+      { keywords: ['color', 'caramel color'], value: -2, reason: 'Contains added color.' }
+    ];
 
-  const breakdown = {
-    protein: Math.round(proteinScore),
-    fiber: Math.round(fiberScore),
-    sugar: Math.round(sugarScore),
-    saturatedFat: Math.round(satFatScore),
-    sodium: Math.round(sodiumScore),
-    calories: Math.round(caloriesScore)
-  };
+    positives.forEach(item => { if (item.keywords.some(k => t.includes(k))) { score += item.value; reasons.push(item.reason); } });
+    negatives.forEach(item => { if (item.keywords.some(k => t.includes(k))) { score += item.value; reasons.push(item.reason); } });
+    return { score: clampLocal(score, -10, 12), reasons };
+  }
 
-  const weighted =
-    (proteinScore * weights.protein) +
-    (fiberScore * weights.fiber) +
-    (sugarScore * weights.sugar) +
-    (satFatScore * weights.saturatedFat) +
-    (sodiumScore * weights.sodium) +
-    (caloriesScore * weights.calories);
+  let score = 50;
+  const reasons = [];
 
-  const ingredientAdj = computeIngredientAdjustment(ingredients || '');
+  const proteinBoost = clampLocal((data.protein || 0) * 1.4, 0, 15);
+  score += proteinBoost;
+  if (proteinBoost >= 8) reasons.push('Strong protein density supports satiety.');
+  else if (proteinBoost >= 3) reasons.push('Moderate protein adds some value.');
 
-  let raw = weighted + ingredientAdj;
-  let finalScore = Math.round(clamp(raw, 0, 100));
-  const grade = mapGrade(finalScore);
+  const fiberBoost = clampLocal((data.fiber || 0) * 2.2, 0, 15);
+  score += fiberBoost;
+  if (fiberBoost >= 8) reasons.push('High fiber improves overall quality.');
+  else if (fiberBoost >= 3) reasons.push('Some fiber contributes to the score.');
 
-  return {
-    score: finalScore,
-    grade,
-    breakdown,
-    ingredientAdjustment: ingredientAdj
-  };
+  const sugar = data.sugar || 0;
+  if (sugar <= 5) { score += 10; reasons.push('Low sugar level is a positive sign.'); }
+  else if (sugar <= 10) { score += 3; reasons.push('Sugar is moderate, so the product stays balanced.'); }
+  else if (sugar <= 15) { score -= 4; reasons.push('Sugar is on the higher side.'); }
+  else { score -= 12; reasons.push('Very high sugar pulls the score down sharply.'); }
+
+  const satFat = data.satFat || 0;
+  if (satFat <= 1.5) { score += 8; reasons.push('Low saturated fat supports a better rating.'); }
+  else if (satFat <= 4) { score += 2; }
+  else if (satFat <= 7) { score -= 4; reasons.push('Saturated fat is somewhat high.'); }
+  else { score -= 10; reasons.push('High saturated fat reduces the health score.'); }
+
+  const sodium = data.sodium || 0;
+  if (sodium <= 120) { score += 8; reasons.push('Sodium is low and consumer-friendly.'); }
+  else if (sodium <= 300) { score += 3; }
+  else if (sodium <= 500) { score -= 4; reasons.push('Sodium is moderately high.'); }
+  else { score -= 10; reasons.push('Very high sodium makes this a weaker option.'); }
+
+  const calories = data.calories || 0;
+  if (calories <= 120) score += 4;
+  else if (calories <= 220) score += 1;
+  else if (calories >= 450) { score -= 5; reasons.push('Calories are dense for the serving basis.'); }
+
+  const ingredientAdjustment = getIngredientAdjustment(data.ingredients || '');
+  score += ingredientAdjustment.score;
+  reasons.push(...ingredientAdjustment.reasons);
+
+  score = Math.round(clampLocal(score, 0, 100));
+
+  let grade = 'C';
+  let gradeText = 'Okay sometimes, balance needed.';
+  let color = 'var(--color-score-c)';
+  if (score >= 80) { grade = 'A'; gradeText = 'Excellent everyday choice.'; color = 'var(--color-score-a)'; }
+  else if (score >= 65) { grade = 'B'; gradeText = 'Good choice with small caution.'; color = 'var(--color-score-b)'; }
+  else if (score >= 50) { grade = 'C'; gradeText = 'Average health quality.'; color = 'var(--color-score-c)'; }
+  else if (score >= 35) { grade = 'D'; gradeText = 'Lower health quality.'; color = 'var(--color-score-d)'; }
+  else { grade = 'E'; gradeText = 'Best kept occasional.'; color = 'var(--color-score-e)'; }
+
+  return { score, grade, color, gradeText, reasons: [...new Set(reasons)].slice(0,5) };
 }
 
-export default { scoreProduct };
+export default { calculateHealthScore };
