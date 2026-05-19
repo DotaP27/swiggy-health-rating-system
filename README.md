@@ -39,3 +39,5 @@ Next steps in this repo:
 - `DEMO_SCRIPT.md` — 60–90s demo walkthrough script
 - `DEPLOY.md` — simple deploy instructions for Netlify/GitHub Pages
 
+Repository: https://github.com/DotaP27/swiggy-health-rating-system
+

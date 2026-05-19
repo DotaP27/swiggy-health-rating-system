@@ -7,8 +7,8 @@ Overview
 - Solution: A client-side score (0–100) and grade (A–E) displayed as a small chip on product cards, computed from nutrition facts and ingredient cues.
 
 Demo & Repo
-- GitHub: (replace with your repo URL)
-- Live demo: (replace with deployed demo URL)
+GitHub: https://github.com/DotaP27/swiggy-health-rating-system
+Live demo: (add deployed demo URL here)
 
 Technical summary
 - Client-side TypeScript/JavaScript scoring module (`src/scoring.js`) that normalizes nutrient inputs, applies weights, and adjusts by ingredient keywords.
@@ -33,5 +33,5 @@ Deliverables
 - Working codebase, README, tests, demo, deployment instructions, 60–90s walkthrough script.
 
 Contact
-- GitHub: (your handle) — include link
+- GitHub: https://github.com/DotaP27
 - Email / LinkedIn: (your contact)
